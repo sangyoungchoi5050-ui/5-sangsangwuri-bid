@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상상우리 입찰공고 시스템</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{--bg:#f1f5f9;--sf:#fff;--bd:#e2e8f0;--pr:#4f46e5;--pr2:#7c3aed;--ok:#10b981;--wn:#f59e0b;--er:#ef4444;--tx:#1e293b;--mu:#64748b;--lt:#f8fafc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);}
+header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:16px 20px;}
+header h1{font-size:17px;font-weight:700;}
+header p{font-size:11px;opacity:.8;margin-top:2px;}
+.tab-nav{display:flex;background:var(--sf);border-bottom:2px solid var(--bd);position:sticky;top:0;z-index:50;box-shadow:0 2px 4px rgba(0,0,0,.06);}
+.tab-nav button{flex:1;padding:12px 4px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tab-nav button.a{color:var(--pr);border-bottom-color:var(--pr);}
+.page{display:none;padding:14px;max-width:960px;margin:0 auto;}
+.page.a{display:block;}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.card-title{font-size:13px;font-weight:700;color:var(--pr);margin-bottom:10px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:500px){.row2{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:11px;font-weight:600;color:var(--mu);}
+.si{padding:8px 10px;border:1px solid var(--bd);border-radius:7px;background:var(--lt);color:var(--tx);font-family:inherit;font-size:12px;outline:none;width:100%;}
+select.si{cursor:pointer;}
+.org-search-row{display:flex;gap:6px;margin-bottom:6px;}
+.org-search-row input{flex:1;padding:7px 10px;border:1px solid var(--bd);border-radius:7px;background:var(--lt);color:var(--tx);font-family:inherit;font-size:12px;outline:none;}
+.org-list{max-height:200px;overflow-y:auto;border:1px solid var(--bd);border-radius:8px;background:var(--lt);}
+.org-group{padding:5px 10px;font-size:10px;font-weight:700;color:var(--mu);background:#f0f4f8;border-bottom:1px solid var(--bd);}
+.org-item{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f1f5f9;}
+.org-item:hover{background:#e0e7ff;}
+.org-item.on{background:#eef2ff;}
+.org-item input[type=checkbox]{accent-color:var(--pr);width:14px;height:14px;flex-shrink:0;}
+.sel-info{font-size:11px;color:var(--mu);margin-top:5px;}
+.kw-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:7px;border:1px solid var(--bd);border-radius:7px;background:var(--lt);min-height:38px;cursor:text;}
+.kw-tag{padding:3px 8px;background:var(--pr);color:#fff;border-radius:10px;font-size:11px;display:flex;align-items:center;gap:4px;}
+.kw-tag .x{cursor:pointer;opacity:.7;font-size:12px;}
+.kw-input{border:none;outline:none;background:transparent;font-family:inherit;font-size:12px;color:var(--tx);min-width:80px;}
+.btn{padding:9px 16px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-pr{background:linear-gradient(135deg,var(--pr),var(--pr2));color:#fff;}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-ok{background:#d1fae5;color:#065f46;}
+.btn-bd{background:transparent;border:1px solid var(--bd);color:var(--mu);}
+.btn-dl{background:#fef3c7;color:#92400e;}
+.btn-blue{background:#e0e7ff;color:var(--pr);}
+.prog-wrap{display:none;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px;}
+.prog-wrap.show{display:block;}
+.prog-title{font-size:13px;font-weight:600;margin-bottom:5px;}
+.prog-bg{background:#e2e8f0;border-radius:4px;height:7px;margin:5px 0;}
+.prog-bar{background:linear-gradient(90deg,var(--pr),var(--pr2));height:7px;border-radius:4px;transition:width .3s;}
+.prog-sub{font-size:11px;color:var(--mu);}
+.result-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+.badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.badge{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;}
+.badge-b{background:#e0e7ff;color:var(--pr);}
+.badge-g{background:#d1fae5;color:var(--ok);}
+.bid-list{display:flex;flex-direction:column;gap:7px;}
+.bid-card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden;}
+.bid-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+.bid-card.matched::before{background:var(--ok);}
+.bid-card.matched{border-color:rgba(16,185,129,.3);}
+.bid-card.normal::before{background:#cbd5e1;}
+.bid-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.rtag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;}
+.rtag.nara{background:#e0e7ff;color:var(--pr);}
+.rtag.seoul{background:#fce7f3;color:#db2777;}
+.rtag.gyeonggi{background:#d1fae5;color:#065f46;}
+.ttag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;white-space:nowrap;}
+.mtag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;background:#d1fae5;color:var(--ok);}
+.ftag{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;background:#d1fae5;color:#065f46;white-space:nowrap;}
+.kw-hit{background:#fef3c7;color:#92400e;padding:1px 4px;border-radius:3px;font-size:10px;font-weight:700;margin-left:2px;}
+.bid-ttl{font-size:13px;font-weight:500;line-height:1.4;flex:1;cursor:pointer;color:var(--pr);}
+.bid-ttl:hover{text-decoration:underline;}
+.bid-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--mu);margin-bottom:7px;}
+.amt{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--wn);}
+.bid-actions{display:flex;gap:5px;flex-wrap:wrap;}
+.er{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--er);margin-bottom:10px;}
+.er.show{display:block;}
+.empty{text-align:center;padding:40px;color:var(--mu);}
+.empty-icon{font-size:32px;margin-bottom:8px;}
+.pg{display:flex;justify-content:center;gap:4px;margin-top:12px;flex-wrap:wrap;}
+.pb{padding:5px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;color:var(--mu);font-family:inherit;font-size:12px;cursor:pointer;}
+.pb.a{background:var(--pr);border-color:var(--pr);color:#fff;font-weight:700;}
+.pb:disabled{opacity:.4;cursor:not-allowed;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:16px;overflow-y:auto;}
+.modal-bg.show{display:block;}
+.modal{background:var(--sf);border-radius:14px;max-width:700px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal-head{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(--sf);border-radius:14px 14px 0 0;z-index:1;}
+.modal-head h3{font-size:13px;font-weight:700;flex:1;line-height:1.4;}
+.modal-close{width:28px;height:28px;border:none;border-radius:50%;background:#f1f5f9;cursor:pointer;font-size:15px;flex-shrink:0;}
+.modal-body{padding:14px 16px;max-height:80vh;overflow-y:auto;}
+.drow{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:12px;}
+.dlbl{color:var(--mu);font-weight:600;min-width:75px;flex-shrink:0;}
+.dval{color:var(--tx);flex:1;word-break:break-all;}
+.atch-section{margin-top:14px;}
+.atch-title{font-size:13px;font-weight:700;margin-bottom:10px;}
+.atch-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--lt);border:1px solid var(--bd);border-radius:8px;margin-bottom:6px;}
+.atch-icon{font-size:18px;flex-shrink:0;}
+.atch-name{font-size:12px;font-weight:600;flex:1;word-break:break-all;}
+.atch-ext{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.ext-pdf{background:#fee2e2;color:#991b1b;}
+.ext-hwp{background:#e0e7ff;color:var(--pr);}
+.ext-hwpx{background:#ddd6fe;color:#5b21b6;}
+.ext-etc{background:#f0f4f8;color:var(--mu);}
+.step-banner{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:10px;line-height:1.5;}
+.s2-banner{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.s3-banner{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏢 상상우리 입찰공고 자동수집 시스템</h1>
+  <p>Step1 수집 → Step2 첨부파일 다운로드 → Step3 키워드 필터링</p>
+</header>
+<div class="tab-nav">
+  <button class="a" onclick="showTab('s1',this)">🔍 Step1 수집</button>
+  <button onclick="showTab('s2',this)">📎 Step2 첨부파일 <span id="t2c"></span></button>
+  <button onclick="showTab('s3',this)">✅ Step3 필터 <span id="t3c"></span></button>
+</div>
+
+<!-- STEP 1 -->
+<div class="page a" id="page-s1">
+  <div class="card">
+    <div class="card-title">⚙️ 수집 조건</div>
+    <div class="row2">
+      <div class="fg">
+        <label>조회 기간</label>
+        <select class="si" id="daysSel">
+          <option value="10">10일</option><option value="20">20일</option>
+          <option value="30" selected>30일</option><option value="40">40일</option>
+          <option value="50">50일</option><option value="60">60일</option>
+          <option value="70">70일</option><option value="80">80일</option>
+          <option value="90">90일</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>업무 유형</label>
+        <select class="si" id="opSel">
+          <option value="servc" selected>용역 (권장)</option>
+          <option value="cnstwk">공사</option>
+          <option value="thng">물품</option>
+          <option value="all">전체 (공사+용역+물품)</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:10px;">
+      <label style="margin-bottom:6px;">공공기관 선택 <span style="font-weight:400;color:var(--mu)">(스크롤하여 선택)</span></label>
+      <div class="org-search-row">
+        <input id="orgQ" placeholder="기관명 검색..." oninput="renderOrgs()">
+        <button class="btn btn-sm btn-ok" onclick="selAll(1)">전체선택</button>
+        <button class="btn btn-sm btn-bd" onclick="selAll(0)">전체해제</button>
+      </div>
+      <div class="org-list" id="orgList"></div>
+      <div class="sel-info" id="selInfo">0개 선택</div>
+    </div>
+    <button class="btn btn-pr" id="runBtn" onclick="startS1()" style="width:100%;padding:12px;">🔍 Step1 수집 시작</button>
+  </div>
+  <div class="prog-wrap" id="prog1">
+    <div class="prog-title" id="p1title">수집 중...</div>
+    <div class="prog-bg"><div class="prog-bar" id="p1bar" style="width:0%"></div></div>
+    <div class="prog-sub" id="p1sub"></div>
+  </div>
+  <div class="er" id="er1"></div>
+  <div id="res1" style="display:none">
+    <div class="result-bar">
+      <b style="font-size:13px">수집 결과</b>
+      <div class="badges">
+        <span class="badge badge-b" id="b1t">0건</span>
+        <button class="btn btn-sm btn-ok" onclick="goTab('s2')">📎 Step2→</button>
+        <button class="btn btn-sm" style="background:linear-gradient(135deg,var(--pr),var(--pr2));color:#fff" onclick="goTab('s3')">✅ Step3→</button>
+      </div>
+    </div>
+    <div class="bid-list" id="list1"></div>
+    <div class="pg" id="pg1"></div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="page" id="page-s2">
+  <div class="step-banner s2-banner">📎 <b>Step2</b> — 공고를 클릭하면 첨부파일(공고문·제안요청서)을 직접 다운로드할 수 있습니다.</div>
+  <div class="result-bar">
+    <b style="font-size:13px">첨부파일 직접 다운로드</b>
+    <div class="badges">
+      <span class="badge badge-b" id="b2t">0건</span>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,var(--pr),var(--pr2));color:#fff" onclick="goTab('s3')">✅ Step3→</button>
+    </div>
+  </div>
+  <div class="bid-list" id="list2"></div>
+  <div class="pg" id="pg2"></div>
+</div>
+
+<!-- STEP 3 -->
+<div class="page" id="page-s3">
+  <div class="step-banner s3-banner" style="margin-bottom:10px;">✅ <b>Step3</b> — 키워드 포함 공고만 필터링. 첨부파일 직접 다운로드 가능.</div>
+  <div class="card">
+    <div class="card-title" style="color:#065f46;">🎯 필터 키워드</div>
+    <div class="fg" style="margin-bottom:8px;">
+      <label>키워드 <span style="font-weight:400;color:var(--mu)">(Enter로 추가, 하나라도 포함 시 매칭)</span></label>
+      <div class="kw-wrap" id="kwWrap" onclick="document.getElementById('kwIn').focus()">
+        <div class="kw-tag">중장년<span class="x" onclick="event.stopPropagation();this.parentNode.remove();applyS3()">×</span></div>
+        <div class="kw-tag">교육<span class="x" onclick="event.stopPropagation();this.parentNode.remove();applyS3()">×</span></div>
+        <div class="kw-tag">상담<span class="x" onclick="event.stopPropagation();this.parentNode.remove();applyS3()">×</span></div>
+        <input class="kw-input" id="kwIn" placeholder="키워드 입력 후 Enter" onkeydown="addKw(event)">
+      </div>
+    </div>
+    <button class="btn btn-sm btn-ok" onclick="applyS3()">🔄 필터 적용</button>
+  </div>
+  <div class="result-bar">
+    <b style="font-size:13px">필터링 결과</b>
+    <div class="badges">
+      <span class="badge badge-g" id="b3m">매칭 0건</span>
+      <span class="badge badge-b" id="b3t">전체 0건</span>
+    </div>
+  </div>
+  <div class="bid-list" id="list3"></div>
+  <div class="pg" id="pg3"></div>
+</div>
+
+<!-- 모달 -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+var ORGS={
+  '나라장터(전국)':[{id:'nara',name:'나라장터 전국',ntce:''}],
+  '서울특별시':['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'].map(function(g){return{id:'se_'+g,name:'서울 '+g,ntce:'서울특별시 '+g};}),
+  '경기도':['수원시','성남시','의정부시','안양시','부천시','광명시','평택시','동두천시','안산시','고양시','과천시','구리시','남양주시','오산시','시흥시','군포시','의왕시','하남시','용인시','파주시','이천시','안성시','김포시','화성시','광주시','양주시','포천시','여주시','연천군','가평군','양평군'].map(function(c){return{id:'gg_'+c,name:'경기 '+c,ntce:'경기도 '+c};})
+};
+var ALL=[];Object.values(ORGS).forEach(function(a){ALL=ALL.concat(a);});
+var SEL=new Set(['nara']),S1=[],S3=[],PER=20,CUR={1:1,2:1,3:1};
+
+function fileIcon(nm){if(!nm)return'📄';var e=nm.split('.').pop().toLowerCase();return e==='pdf'?'📕':e==='hwp'||e==='hwpx'?'📘':e==='xlsx'||e==='xls'?'📗':'📄';}
+function fileExtClass(nm){if(!nm)return'ext-etc';var e=nm.split('.').pop().toLowerCase();return e==='pdf'?'ext-pdf':e==='hwp'?'ext-hwp':e==='hwpx'?'ext-hwpx':'ext-etc';}
+
+function renderOrgs(){
+  var q=document.getElementById('orgQ').value.trim().toLowerCase();
+  var html='';
+  Object.entries(ORGS).forEach(function(e){
+    var gn=e[0],items=e[1];
+    var vis=q?items.filter(function(o){return o.name.toLowerCase().includes(q);}):items;
+    if(!vis.length)return;
+    html+='<div class="org-group">'+gn+'</div>';
+    vis.forEach(function(o){
+      var on=SEL.has(o.id);
+      html+='<div class="org-item'+(on?' on':'')+'" onclick="tog(\''+o.id+'\')">'
+        +'<input type="checkbox" '+(on?'checked':'')+' onclick="event.stopPropagation();tog(\''+o.id+'\')"> '+o.name+'</div>';
+    });
+  });
+  document.getElementById('orgList').innerHTML=html||'<div style="padding:12px;text-align:center;font-size:12px;color:var(--mu)">없음</div>';
+  var ns=Array.from(SEL).slice(0,3).map(function(id){var o=ALL.find(function(x){return x.id===id;});return o?o.name:'';}).filter(Boolean).join(', ');
+  document.getElementById('selInfo').textContent=SEL.size+'개 선택'+(ns?' | '+ns+(SEL.size>3?' 외 '+(SEL.size-3)+'개':''):'');
+}
+function tog(id){SEL.has(id)?SEL.delete(id):SEL.add(id);renderOrgs();}
+function selAll(v){
+  var q=document.getElementById('orgQ').value.trim().toLowerCase();
+  var vis=q?ALL.filter(function(o){return o.name.toLowerCase().includes(q);}):ALL;
+  vis.forEach(function(o){v?SEL.add(o.id):SEL.delete(o.id);});renderOrgs();
+}
+function showTab(id,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('a');});
+  document.querySelectorAll('.tab-nav button').forEach(function(b){b.classList.remove('a');});
+  document.getElementById('page-'+id).classList.add('a');btn.classList.add('a');
+}
+function goTab(id){
+  var btns=document.querySelectorAll('.tab-nav button');
+  showTab(id,btns[{'s1':0,'s2':1,'s3':2}[id]]);
+  if(id==='s2')renderList(2,S1);
+  if(id==='s3')applyS3();
+}
+
+function fetchBids(op,days,ntce){
+  var url='/api/bids?op='+op+'&days='+days+(ntce?'&ntce='+encodeURIComponent(ntce):'');
+  return fetch(url).then(function(r){return r.json();}).then(function(d){
+    if(!d.ok)throw new Error(d.error||'오류');
+    return d.items||[];
+  });
+}
+
+function startS1(){
+  if(!SEL.size){showEr('er1','기관을 선택하세요');return;}
+  var days=document.getElementById('daysSel').value;
+  var op=document.getElementById('opSel').value;
+  var ops=op==='all'?['cnstwk','servc','thng']:[op];
+  var orgs=ALL.filter(function(o){return SEL.has(o.id);});
+  var tasks=[];
+  orgs.forEach(function(org){ops.forEach(function(opk){tasks.push({opk:opk,org:org,days:days});});});
+  S1=[];
+  var btn=document.getElementById('runBtn');btn.disabled=true;
+  document.getElementById('prog1').classList.add('show');
+  document.getElementById('res1').style.display='none';
+  document.getElementById('er1').classList.remove('show');
+  var idx=0,errs=[];
+  function next(){
+    if(idx>=tasks.length){
+      var seen={};
+      S1=S1.filter(function(d){var k=d.bidNo+d.ord;if(seen[k])return false;seen[k]=true;return true;});
+      S1.sort(function(a,b){return b.rgstDt.localeCompare(a.rgstDt);});
+      setProg('완료! '+S1.length+'건 수집','',100);
+      if(errs.length)showEr('er1','일부 실패('+errs.length+'건): '+errs.slice(0,2).join(' | ')+(errs.length>2?'...':''));
+      btn.disabled=false;
+      document.getElementById('b1t').textContent=S1.length+'건';
+      document.getElementById('t2c').textContent='('+S1.length+')';
+      document.getElementById('res1').style.display='block';
+      CUR[1]=1;renderList(1,S1);return;
+    }
+    var t=tasks[idx];
+    setProg('수집 중 ('+(idx+1)+'/'+tasks.length+')',t.org.name+' ['+t.opk+']',Math.floor(idx/tasks.length*95));
+    fetchBids(t.opk,t.days,t.org.ntce)
+      .then(function(items){S1=S1.concat(items);idx++;next();})
+      .catch(function(e){errs.push(t.org.name+': '+e.message);idx++;next();});
+  }
+  next();
+}
+
+function renderList(step,data){
+  var lid='list'+step,pid='pg'+step;
+  var el=document.getElementById(lid);
+  if(!data||!data.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">'+(step===3?'🎯':'📄')+'</div><div>'+(step===1||step===2?'수집 결과 없음':(S1.length?'매칭 공고 없음':'Step1에서 먼저 수집'))+'</div></div>';
+    document.getElementById(pid).innerHTML='';return;
+  }
+  if(step===2) document.getElementById('b2t').textContent=data.length+'건';
+  var cur=CUR[step];
+  var sl=data.slice((cur-1)*PER,cur*PER);
+  el.innerHTML=sl.map(function(d){return cardHtml(d,step);}).join('');
+  mkPg(pid,data.length,cur,function(p){CUR[step]=p;renderList(step,data);});
+}
+
+function cardHtml(d,step){
+  var dl=getDL(d.bidCloseDt);
+  var dt=dl!==null?(dl<=0?'<span style="color:#ef4444;font-size:10px">마감</span>':(dl<=3?'<span style="color:#ef4444;font-size:10px">D-'+dl+'</span>':'')):'';
+  var rl=d.region==='seoul'?'seoul':d.region==='gyeonggi'?'gyeonggi':'nara';
+  var rn=d.region==='seoul'?'서울':d.region==='gyeonggi'?'경기':'나라장터';
+  var hits=(d.hitKws||[]).map(function(k){return'<span class="kw-hit">'+k+'</span>';}).join('');
+  var cls=step===3&&d.matched?'matched':'normal';
+  var bn=esc(d.bidNo),bo=esc(d.ord);
+  var fc=d.files?d.files.length:0;
+  return'<div class="bid-card '+cls+'">'
+    +'<div class="bid-top"><span class="rtag '+rl+'">'+rn+'</span><span class="ttag">'+d.bidTypeNm+'</span>'
+    +(step===3&&d.matched?'<span class="mtag">✅매칭</span>':'')
+    +(fc>0?'<span class="ftag">📎'+fc+'개</span>':'')
+    +'<span class="bid-ttl" onclick="openModal(\''+bn+'\',\''+bo+'\')">'+d.title+hits+'</span></div>'
+    +'<div class="bid-meta">'
+    +(d.org?'<span>🏢 '+d.org+'</span>':'')
+    +(d.demandOrg&&d.demandOrg!==d.org?'<span>📋 '+d.demandOrg+'</span>':'')
+    +(d.amount?'<span class="amt">💰 '+d.amount+'</span>':'')
+    +(d.bidCloseDt?'<span>📅 '+d.bidCloseDt.substring(0,10)+' '+dt+'</span>':'')
+    +'</div>'
+    +'<div class="bid-actions">'
+    +'<button class="btn btn-sm btn-blue" onclick="openModal(\''+bn+'\',\''+bo+'\')">📎 상세+파일다운</button>'
+    +'<button class="btn btn-sm btn-ok" onclick="window.open(\''+esc(d.bidNtceUrl||'https://www.g2b.go.kr')+'\',\'_blank\')">🌐 공고원문</button>'
+    +'</div></div>';
+}
+
+function openModal(bidNo,ord){
+  var d=S1.find(function(x){return x.bidNo===bidNo&&x.ord===ord;})
+      ||S3.find(function(x){return x.bidNo===bidNo&&x.ord===ord;});
+  if(!d)return;
+  document.getElementById('modalTitle').textContent=d.title;
+  var rows=[
+    ['공고번호',d.bidNo+(d.ord&&d.ord!=='000'?'-'+d.ord:'')],
+    ['발주기관',d.org||'-'],['수요기관',d.demandOrg||'-'],
+    ['업무유형',d.bidTypeNm],['공고종류',d.ntceKind||'-'],
+    ['계약방법',d.cntrctMethod||'-'],['예산금액',d.amount||'-'],
+    ['입찰시작',d.bidOpenDt?d.bidOpenDt.substring(0,16):'-'],
+    ['입찰마감',d.bidCloseDt?d.bidCloseDt.substring(0,16):'-'],
+    ['개찰일시',d.opengDt?d.opengDt.substring(0,16):'-']
+  ];
+  var html=rows.map(function(r){return'<div class="drow"><span class="dlbl">'+r[0]+'</span><span class="dval">'+r[1]+'</span></div>';}).join('');
+  html+='<div style="margin:12px 0 8px;"><button class="btn btn-sm btn-ok" onclick="window.open(\''+esc(d.bidNtceUrl||'https://www.g2b.go.kr')+'\',\'_blank\')">🌐 공고원문 열기</button></div>';
+  html+='<div class="atch-section"><div class="atch-title">📎 첨부파일 직접 다운로드 ('+(d.files?d.files.length:0)+'개)</div>';
+  if(!d.files||!d.files.length){
+    html+='<div style="padding:12px;text-align:center;color:var(--mu);font-size:12px;">첨부파일 없음</div>';
+  } else {
+    d.files.forEach(function(f){
+      var ext=f.name.split('.').pop().toUpperCase();
+      html+='<div class="atch-item">'
+        +'<span class="atch-icon">'+fileIcon(f.name)+'</span>'
+        +'<span class="atch-name">'+f.name+'</span>'
+        +'<span class="atch-ext '+fileExtClass(f.name)+'">'+ext+'</span>'
+        +'<button class="btn btn-sm btn-dl" onclick="dlFile(\''+esc(f.url)+'\',\''+esc(f.name)+'\')">⬇️ 다운로드</button>'
+        +'</div>';
+    });
+  }
+  html+='</div>';
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalBg').classList.add('show');
+}
+function dlFile(url,name){
+  var a=document.createElement('a');a.href=url;a.download=name;a.target='_blank';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+function addKw(e){
+  if(e.key!=='Enter')return;
+  var v=document.getElementById('kwIn').value.trim();if(!v)return;
+  var t=document.createElement('div');t.className='kw-tag';
+  t.innerHTML=v+'<span class="x" onclick="event.stopPropagation();this.parentNode.remove();applyS3()">×</span>';
+  document.getElementById('kwWrap').insertBefore(t,document.getElementById('kwIn'));
+  document.getElementById('kwIn').value='';applyS3();
+}
+function getKws(){var kws=[];document.querySelectorAll('#kwWrap .kw-tag').forEach(function(t){kws.push(t.childNodes[0].nodeValue.trim());});return kws;}
+function applyS3(){
+  var kws=getKws();
+  S3=S1.map(function(d){
+    var txt=(d.title+' '+d.org+' '+d.demandOrg).toLowerCase();
+    var hits=kws.filter(function(k){return txt.indexOf(k.toLowerCase())>=0;});
+    return Object.assign({},d,{matched:hits.length>0,hitKws:hits});
+  }).filter(function(d){return d.matched;});
+  document.getElementById('b3m').textContent='매칭 '+S3.length+'건';
+  document.getElementById('b3t').textContent='전체 '+S1.length+'건';
+  document.getElementById('t3c').textContent='('+S3.length+')';
+  CUR[3]=1;renderList(3,S3);
+}
+function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function getDL(s){if(!s)return null;try{return Math.ceil((new Date(s.replace(/\s.*/,'').replace(/\./g,'-'))-new Date())/86400000);}catch(e){return null;}}
+function setProg(t,s,p){document.getElementById('p1title').textContent=t;document.getElementById('p1sub').textContent=s;document.getElementById('p1bar').style.width=p+'%';}
+function showEr(id,m){var e=document.getElementById(id);e.textContent='⚠️ '+m;e.classList.add('show');}
+function mkPg(id,total,cur,cb){
+  var tot=Math.ceil(total/PER),el=document.getElementById(id);
+  if(tot<=1){el.innerHTML='';el._cb=cb;return;}
+  var h='<button class="pb" onclick="pgGo(\''+id+'\','+(cur-1)+')" '+(cur===1?'disabled':'')+'>◀</button>';
+  for(var i=1;i<=tot;i++){
+    if(i===1||i===tot||Math.abs(i-cur)<=2)h+='<button class="pb '+(i===cur?'a':'')+'" onclick="pgGo(\''+id+'\','+i+')">'+i+'</button>';
+    else if(Math.abs(i-cur)===3)h+='<span style="padding:0 4px;color:var(--mu)">…</span>';
+  }
+  h+='<button class="pb" onclick="pgGo(\''+id+'\','+(cur+1)+')" '+(cur===tot?'disabled':'')+'>▶</button>';
+  el.innerHTML=h;el._cb=cb;
+}
+function pgGo(id,p){var el=document.getElementById(id);if(el._cb)el._cb(p);window.scrollTo({top:0,behavior:'smooth'});}
+renderOrgs();
+</script>
+</body>
+</html>
